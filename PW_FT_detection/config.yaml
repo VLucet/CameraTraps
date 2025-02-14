@@ -7,11 +7,11 @@ task: train
 exp_name: MDV6-yolov9-e
 
 # Train
-epochs: 20
-batch_size_train: 16
+epochs: 10
+batch_size_train: 1
 imgsz: 640
 device_train: 0
-workers: 8
+workers: 4
 optimizer: auto
 lr0: 0.01
 patience: 5
