@@ -1,52 +1,48 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-""" Demo for image detection"""
-
-#%% 
 # Importing necessary basic libraries and modules
 import os
 # PyTorch imports 
 import torch
 
-#%% 
 # Importing the model, dataset, transformations and utility functions from PytorchWildlife
 from PytorchWildlife.models import detection as pw_detection
 from PytorchWildlife import utils as pw_utils
 
-#%% 
 # Setting the device to use for computations ('cuda' indicates GPU)
-# DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DEVICE = "cpu"
-
-#%% 
-# Initializing the MegaDetectorV6 model for image detection
-# Valid versions are MDV6-yolov9-c, MDV6-yolov9-e, MDV6-yolov10-c, MDV6-yolov10-e or MDV6-rtdetr-c
-detection_model = pw_detection.MegaDetectorV6(device=DEVICE, pretrained=True, version="MDV6-yolov9-c")
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+# DEVICE = "cpu"
 
 # Uncomment the following line to use MegaDetectorV5 instead of MegaDetectorV6
 #detection_model = pw_detection.MegaDetectorV5(device=DEVICE, pretrained=True, version="a")
 
-#%% Batch detection
+#Batch detection
 """ Batch-detection demo """
 
 # Specifying the folder path containing multiple images for batch detection
-tgt_folder_path = "../../../data/images/md-test/all"
+tgt_folder_path = "/mnt/class_data/group4/val/md-test/subset/"
 
-# Performing batch detection on the images
-results = detection_model.batch_image_detection(tgt_folder_path, batch_size=16)
+# Initializing the MegaDetectorV6 model for image detection
+# Valid versions are MDV6-yolov9-c, MDV6-yolov9-e, MDV6-yolov10-c, MDV6-yolov10-e or MDV6-rtdetr-c
+models = ['MDV6-yolov9-e', 'MDV6-yolov10-c', 'MDV6-yolov10-e', 'MDV6-rtdetr-c'] # 'MDV6-yolov9-c',
 
-#%% Output to annotated images
+for model in models:
+    detection_model = pw_detection.MegaDetectorV6(device=DEVICE, pretrained=True, version=model)
+    # Performing batch detection on the images
+    results = detection_model.batch_image_detection(tgt_folder_path, batch_size=64)
+
+    # Output to JSON results
+    # Saving the detection results in JSON format
+    pw_utils.save_detection_json(results, os.path.join(".",f"{model}_batch_output.json"),
+                                categories=detection_model.CLASS_NAMES,
+                                exclude_category_ids=[], # Category IDs can be found in the definition of each model.
+                                exclude_file_path=None)
+
+# Output to annotated images
 # Saving the batch detection results as annotated images
 # pw_utils.save_detection_images(results, "batch_output", tgt_folder_path, overwrite=False)
 
-#%% Output to cropped images
+# Output to cropped images
 # Saving the detected objects as cropped images
 # pw_utils.save_crop_images(results, "crop_output", tgt_folder_path, overwrite=False)
-
-#%% Output to JSON results
-# Saving the detection results in JSON format
-pw_utils.save_detection_json(results, os.path.join(".","batch_output.json"),
-                             categories=detection_model.CLASS_NAMES,
-                             exclude_category_ids=[], # Category IDs can be found in the definition of each model.
-                             exclude_file_path=None)
